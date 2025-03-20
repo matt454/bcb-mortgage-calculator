@@ -1,4 +1,183 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize charts
+    const switchSaveChart = new Chart(document.getElementById('switch-save-chart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Principal', 'Interest'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: ['#1a5f7a', '#e8f4f8']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Payment Breakdown'
+                }
+            }
+        }
+    });
+
+    const switchSaveLineChart = new Chart(document.getElementById('switch-save-line-chart'), {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Remaining Balance',
+                data: [],
+                borderColor: '#1a5f7a',
+                backgroundColor: 'rgba(26, 95, 122, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Mortgage Paydown Period'
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const mortgagePaymentChart = new Chart(document.getElementById('mortgage-payment-chart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Principal', 'Interest'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: ['#1a5f7a', '#e8f4f8']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Payment Breakdown'
+                }
+            }
+        }
+    });
+
+    const mortgagePaymentLineChart = new Chart(document.getElementById('mortgage-payment-line-chart'), {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Remaining Balance',
+                data: [],
+                borderColor: '#1a5f7a',
+                backgroundColor: 'rgba(26, 95, 122, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Mortgage Paydown Period'
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const borrowingPowerChart = new Chart(document.getElementById('borrowing-power-chart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Principal', 'Interest'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: ['#1a5f7a', '#e8f4f8']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Payment Breakdown'
+                }
+            }
+        }
+    });
+
+    const borrowingPowerLineChart = new Chart(document.getElementById('borrowing-power-line-chart'), {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Remaining Balance',
+                data: [],
+                borderColor: '#1a5f7a',
+                backgroundColor: 'rgba(26, 95, 122, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Mortgage Paydown Period'
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Store chart instances globally
+    window.charts = {
+        switchSave: switchSaveChart,
+        switchSaveLine: switchSaveLineChart,
+        mortgagePayment: mortgagePaymentChart,
+        mortgagePaymentLine: mortgagePaymentLineChart,
+        borrowingPower: borrowingPowerChart,
+        borrowingPowerLine: borrowingPowerLineChart
+    };
+
     // Tab Switching Logic
     const tabButtons = document.querySelectorAll('.tab-button');
     const calculators = document.querySelectorAll('.calculator');
@@ -16,14 +195,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Calculator 1: Switch and Save
-    document.getElementById('calculate-switch-save').addEventListener('click', calculateSwitchAndSave);
-    
-    // Calculator 2: Mortgage Payment
-    document.getElementById('calculate-mortgage-payment').addEventListener('click', calculateMortgagePayment);
-    
-    // Calculator 3: Borrowing Power
-    document.getElementById('calculate-borrowing-power').addEventListener('click', calculateBorrowingPower);
+    // Initialize all sliders with event listeners
+    initializeSliders();
     
     // Initialize calculators with default values
     calculateSwitchAndSave();
@@ -41,6 +214,14 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
+function formatPercentage(value) {
+    return value.toFixed(1) + '%';
+}
+
+function formatYears(value) {
+    return value + ' years';
+}
+
 function calculateMonthlyPayment(principal, annualRate, termYears) {
     const monthlyRate = annualRate / (12 * 100); // Convert annual rate to monthly decimal
     const numPayments = termYears * 12;
@@ -56,6 +237,78 @@ function calculateMonthlyPayment(principal, annualRate, termYears) {
 
 function calculateTotalInterest(monthlyPayment, principal, termYears) {
     return (monthlyPayment * termYears * 12) - principal;
+}
+
+// Initialize all sliders with event listeners
+function initializeSliders() {
+    // Switch and Save Calculator sliders
+    const switchSaveSliders = [
+        { id: 'current-rate', valueId: 'current-rate-value', format: formatPercentage },
+        { id: 'bcb-rate-1', valueId: 'bcb-rate-1-value', format: formatPercentage },
+        { id: 'monthly-repayment', valueId: 'monthly-repayment-value', format: formatCurrency },
+        { id: 'refinance-amount', valueId: 'refinance-amount-value', format: formatCurrency },
+        { id: 'current-maturity', valueId: 'current-maturity-value', format: formatYears }
+    ];
+    
+    // Mortgage Payment Calculator sliders
+    const mortgagePaymentSliders = [
+        { id: 'bcb-rate-2', valueId: 'bcb-rate-2-value', format: formatPercentage },
+        { id: 'mortgage-amount', valueId: 'mortgage-amount-value', format: formatCurrency },
+        { id: 'mortgage-term', valueId: 'mortgage-term-value', format: formatYears }
+    ];
+    
+    // Borrowing Power Calculator sliders
+    const borrowingPowerSliders = [
+        { id: 'monthly-income', valueId: 'monthly-income-value', format: formatCurrency },
+        { id: 'monthly-expenses', valueId: 'monthly-expenses-value', format: formatCurrency },
+        { id: 'bcb-rate-3', valueId: 'bcb-rate-3-value', format: formatPercentage },
+        { id: 'borrowing-term', valueId: 'borrowing-term-value', format: formatYears }
+    ];
+    
+    // Add event listeners to all sliders
+    [...switchSaveSliders, ...mortgagePaymentSliders, ...borrowingPowerSliders].forEach(slider => {
+        const input = document.getElementById(slider.id);
+        const valueDisplay = document.getElementById(slider.valueId);
+        
+        // Update display on input
+        input.addEventListener('input', () => {
+            valueDisplay.textContent = slider.format(parseFloat(input.value));
+            
+            // Trigger appropriate calculator based on slider group
+            if (switchSaveSliders.includes(slider)) {
+                calculateSwitchAndSave();
+            } else if (mortgagePaymentSliders.includes(slider)) {
+                calculateMortgagePayment();
+            } else if (borrowingPowerSliders.includes(slider)) {
+                calculateBorrowingPower();
+            }
+        });
+    });
+}
+
+// Add new helper function for generating paydown data
+function generatePaydownData(principal, annualRate, termYears) {
+    const monthlyRate = annualRate / (12 * 100);
+    const numPayments = termYears * 12;
+    const monthlyPayment = calculateMonthlyPayment(principal, annualRate, termYears);
+    
+    const labels = [];
+    const data = [];
+    let balance = principal;
+    
+    for (let i = 0; i <= numPayments; i++) {
+        labels.push(i === 0 ? 'Start' : `Year ${Math.ceil(i / 12)}`);
+        data.push(balance);
+        
+        if (i < numPayments) {
+            const interestPayment = balance * monthlyRate;
+            const principalPayment = monthlyPayment - interestPayment;
+            balance -= principalPayment;
+        }
+
+    }
+    
+    return { labels, data };
 }
 
 // Calculator 1: Switch and Save Logic
@@ -99,6 +352,15 @@ function calculateSwitchAndSave() {
     document.getElementById('new-interest-payable').textContent = formatCurrency(newInterestPayable);
     document.getElementById('potential-savings').textContent = formatCurrency(potentialSavings);
     document.getElementById('new-monthly-payment').textContent = formatCurrency(newMonthlyPayment);
+
+    // Update charts
+    window.charts.switchSave.data.datasets[0].data = [refinanceAmount, newInterestPayable];
+    window.charts.switchSave.update();
+
+    const paydownData = generatePaydownData(refinanceAmount, bcbRate, currentMaturity);
+    window.charts.switchSaveLine.data.labels = paydownData.labels;
+    window.charts.switchSaveLine.data.datasets[0].data = paydownData.data;
+    window.charts.switchSaveLine.update();
 }
 
 // Calculator 2: Mortgage Payment Logic
@@ -120,6 +382,15 @@ function calculateMortgagePayment() {
     document.getElementById('monthly-payment').textContent = formatCurrency(monthlyPayment);
     document.getElementById('total-interest-payable').textContent = formatCurrency(totalInterestPayable);
     document.getElementById('total-amount-payable').textContent = formatCurrency(totalAmountPayable);
+
+    // Update charts
+    window.charts.mortgagePayment.data.datasets[0].data = [mortgageAmount, totalInterestPayable];
+    window.charts.mortgagePayment.update();
+
+    const paydownData = generatePaydownData(mortgageAmount, bcbRate, mortgageTerm);
+    window.charts.mortgagePaymentLine.data.labels = paydownData.labels;
+    window.charts.mortgagePaymentLine.data.datasets[0].data = paydownData.data;
+    window.charts.mortgagePaymentLine.update();
 }
 
 // Calculator 3: Borrowing Power Logic
@@ -156,4 +427,13 @@ function calculateBorrowingPower() {
     document.getElementById('borrowing-capacity').textContent = formatCurrency(borrowingCapacity);
     document.getElementById('estimated-monthly-payment').textContent = formatCurrency(estimatedMonthlyPayment);
     document.getElementById('borrowing-interest-payable').textContent = formatCurrency(borrowingInterestPayable);
-} 
+
+    // Update charts
+    window.charts.borrowingPower.data.datasets[0].data = [borrowingCapacity, borrowingInterestPayable];
+    window.charts.borrowingPower.update();
+
+    const paydownData = generatePaydownData(borrowingCapacity, bcbRate, borrowingTerm);
+    window.charts.borrowingPowerLine.data.labels = paydownData.labels;
+    window.charts.borrowingPowerLine.data.datasets[0].data = paydownData.data;
+    window.charts.borrowingPowerLine.update();
+} } 
